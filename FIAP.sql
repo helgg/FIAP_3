@@ -1,5 +1,5 @@
-@C:\Users\helde\OneDrive\FIAP\REPO\FIAP_E3\cria.sql;
-@C:\Users\helde\OneDrive\FIAP\REPO\FIAP_E3\apaga.sql;
+@C:\Users\helde\OneDrive\FIAP\REPO\FIAP_F3\cria.sql;
+@C:\Users\helde\OneDrive\FIAP\REPO\FIAP_F3\apaga.sql;
 
 SELECT table_name, num_rows, sample_size FROM user_tables;
 
