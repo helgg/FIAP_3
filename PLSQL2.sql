@@ -139,6 +139,7 @@ DECLARE
             ,pd.DS_PRODUTO AS DESC_PROD
             ,pd.VL_UNITARIO AS VALOR_UN
             ,pd.VL_PERC_LUCRO AS PERC_LUCRO
+            ,(pd.VL_PERC_LUCRO / 100) * pd.VL_UNITARIO AS VL_UNITARIO_LUCRO_PRODUTO
             ,cli.NR_CLIENTE
             ,cli.NM_CLIENTE AS NOME_CLIENTE
             FROM MC_SGV_SAC sac
@@ -158,6 +159,7 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('Nome do produto: '||x.DESC_PROD);
         DBMS_OUTPUT.PUT_LINE('Valor unitário: R$ '||x.VALOR_UN);
         DBMS_OUTPUT.PUT_LINE('Percentual de lucro: '||x.PERC_LUCRO||'%');
+        DBMS_OUTPUT.PUT_LINE('Valor lucro unitário: '||x.VL_UNITARIO_LUCRO_PRODUTO);
         DBMS_OUTPUT.PUT_LINE('Número do cliente: '||x.NR_CLIENTE);
         DBMS_OUTPUT.PUT_LINE('Nome do cliente: '||x.NOME_CLIENTE);
         DBMS_OUTPUT.PUT_LINE('-----');
@@ -166,7 +168,65 @@ END;
 /
 
 
+SET SERVEROUTPUT ON
+DECLARE
+    v_sg_estado CHAR(2);
+    v_nm_estado VARCHAR2(50);
 
+    CURSOR cursor_sac IS 
+        SELECT 
+            sac.NR_SAC AS NR_OCOR_SAC,
+            sac.DT_ABERTURA_SAC AS DT_ABERTURA,
+            sac.HR_ABERTURA_SAC AS HR_ABERTURA,
+            sac.TP_SAC AS TIPO_SAC,
+            pd.CD_PRODUTO AS COD_PROD,
+            pd.DS_PRODUTO AS DESC_PROD,
+            pd.VL_UNITARIO AS VALOR_UN,
+            pd.VL_PERC_LUCRO AS PERC_LUCRO,
+            (pd.VL_PERC_LUCRO / 100) * pd.VL_UNITARIO AS VL_UNITARIO_LUCRO_PRODUTO,
+            cli.NR_CLIENTE,
+            cli.NM_CLIENTE AS NOME_CLIENTE
+        FROM MC_SGV_SAC sac
+        INNER JOIN mc_produto pd ON sac.CD_PRODUTO = pd.CD_PRODUTO
+        INNER JOIN mc_cliente cli ON sac.NR_CLIENTE = cli.nr_cliente;
+
+BEGIN
+
+    FOR x IN cursor_sac LOOP
+        SELECT uf.SG_ESTADO, uf.NM_ESTADO INTO v_sg_estado, v_nm_estado
+        FROM mc_cliente cli
+        LEFT JOIN mc_end_cli ecli ON cli.NR_CLIENTE = ecli.NR_CLIENTE
+        LEFT JOIN mc_Logradouro log ON ecli.CD_LOGRADOURO_CLI = log.CD_LOGRADOURO
+        LEFT JOIN mc_bairro bai ON log.CD_BAIRRO = bai.CD_BAIRRO
+        LEFT JOIN mc_cidade cid ON bai.CD_CIDADE = cid.CD_CIDADE
+        LEFT JOIN mc_estado uf ON cid.SG_ESTADO = uf.SG_ESTADO
+        WHERE log.CD_LOGRADOURO = (SELECT CD_LOGRADOURO_CLI FROM mc_end_cli WHERE NR_CLIENTE = x.NR_CLIENTE);
+
+        DBMS_OUTPUT.PUT_LINE('Número ocorrência SAC: ' || x.NR_OCOR_SAC);
+        DBMS_OUTPUT.PUT_LINE('Data de abertura do SAC: ' || x.DT_ABERTURA);
+        DBMS_OUTPUT.PUT_LINE('Hora de abertura do SAC: ' || x.HR_ABERTURA);
+        DBMS_OUTPUT.PUT_LINE('Tipo do SAC: ' || x.TIPO_SAC);
+        DBMS_OUTPUT.PUT_LINE('Código do produto: ' || x.COD_PROD);
+        DBMS_OUTPUT.PUT_LINE('Nome do produto: ' || x.DESC_PROD);
+        DBMS_OUTPUT.PUT_LINE('Valor unitário: R$ ' || x.VALOR_UN);
+        DBMS_OUTPUT.PUT_LINE('Percentual de lucro: ' || x.PERC_LUCRO || '%');
+        DBMS_OUTPUT.PUT_LINE('Valor lucro unitário: ' || x.VL_UNITARIO_LUCRO_PRODUTO);
+        DBMS_OUTPUT.PUT_LINE('Número do cliente: ' || x.NR_CLIENTE);
+        DBMS_OUTPUT.PUT_LINE('Nome do cliente: ' || x.NOME_CLIENTE);
+        DBMS_OUTPUT.PUT_LINE('Sigla do estado: ' || v_sg_estado);
+        DBMS_OUTPUT.PUT_LINE('Nome do estado: ' || v_nm_estado);
+        DBMS_OUTPUT.PUT_LINE('-----');
+    END LOOP;
+
+END;
+/
+
+
+SELECT object_name, object_type, status
+FROM all_objects
+WHERE object_name = 'FUN_MC_GERA_ALIQUOTA_MEDIA_ICMS_ESTADO'
+  AND owner = 'TSCO'
+  AND object_type = 'FUNCTION';
 
 
 

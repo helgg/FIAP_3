@@ -6,7 +6,7 @@ SELECT table_name, num_rows, sample_size FROM user_tables;
 SELECT table_name, column_name, data_type, data_length, nullable
 FROM user_tab_columns
 WHERE 1=1
-AND table_name LIKE '%VISUALIZACAO%'
+AND table_name LIKE '%MC_SGV_OCORRENCIA_SAC%'
 ORDER BY column_id;
 
 SET SERVEROUTPUT ON
