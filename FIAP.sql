@@ -21,3 +21,18 @@ END;
 /
 
 SELECT * FROM MC_SGV_OCORRENCIA_SAC;
+
+
+LOCK TABLE MC_SGV_SAC IN EXCLUSIVE MODE;
+DROP TABLE MC_SGV_SAC CASCADE CONSTRAINTS PURGE;
+
+
+
+SELECT s.sid, s.serial#, s.username, s.program
+FROM v$locked_object l, dba_objects o, v$session s
+WHERE l.object_id = o.object_id
+  AND o.object_name = 'MC_SGV_SAC'
+  AND l.session_id = s.sid;
+  
+  
+ALTER SYSTEM KILL SESSION '2554,35788' IMMEDIATE;
